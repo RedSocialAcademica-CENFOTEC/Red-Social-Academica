@@ -18,6 +18,7 @@ struct Usuario {
 struct Comentario {
     int id;
     int idUsuario;
+    int idPublicacion;     // a que publicacion pertenece
     string contenido;
     int fecha;             // formato AAAAMMDD
 };
@@ -27,8 +28,8 @@ struct Publicacion {
     int id;
     int idAutor;
     string contenido;
-    int fecha;              // AAAAMMDD -> esta es la clave del arbol B+
-    vector<Comentario> comentarios;
+    int fecha;                    // AAAAMMDD -> esta es la clave del arbol B+
+    vector<int> idsComentarios;   // referencias, no objetos completos
 };
 
 struct SolicitudAmistad {
@@ -43,3 +44,15 @@ struct Notificacion {
     string mensaje;
     int fecha;
 };
+
+//convierte a texto lindo solo para mostrarla la parte de la fecha 
+inline string formatearFecha(int fecha) {
+    int anio = fecha / 10000;
+    int mes = (fecha / 100) % 100;
+    int dia = fecha % 100;
+
+    static const string meses[] = { "", "enero", "febrero", "marzo", "abril", "mayo", "junio",
+                                     "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre" };
+
+    return to_string(dia) + " de " + meses[mes] + " del " + to_string(anio);
+}
