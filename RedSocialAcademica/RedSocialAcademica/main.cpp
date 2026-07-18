@@ -31,7 +31,6 @@ int main() {
     arbol.eliminar(3);
     arbol.imprimirHojas();
 
-
     cout << endl << "=== Prueba de Hashing Dinamico ===" << endl;
     DynamicHash hash;
 

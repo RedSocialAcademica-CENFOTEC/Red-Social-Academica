@@ -4,29 +4,23 @@ tenés un directorio (un array de punteros a "buckets"), y una función hash que
 Cuando un bucket se llena, en vez de crecer indefinidamente, se divide en dos y si el directorio ya no tiene espacio para apuntar a ambos, el directorio 
 también se duplica de tamaño
 */
-
 #pragma once
 #include "modelos.h"
 #include <vector>
 #include <string>
 using namespace std;
-
 struct Bucket {
     vector<Usuario> usuarios;
     int profundidadLocal;
     int capacidad;
-
     Bucket(int profLocal, int cap = 2);
 };
-
 class DynamicHash {
 private:
     vector<Bucket*> directorio;
     int profundidadGlobal;
-
     int calcularHash(const string& clave);
     void dividirBucket(int indice);
-
 public:
     DynamicHash();
     void insertar(const Usuario& user);

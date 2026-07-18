@@ -141,9 +141,13 @@
   <ItemGroup>
     <ClCompile Include="bplustree.cpp" />
     <ClCompile Include="dynamichash.cpp" />
-    <ClCompile Include="grafo.cpp" />
+    <ClCompile Include="grafo.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="mongoapi.cpp" />
+    <ClCompile Include="mongoapi.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="notificationqueue.cpp" />
     <ClCompile Include="rojonegro.cpp" />
   </ItemGroup>
