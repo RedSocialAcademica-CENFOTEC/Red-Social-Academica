@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="RedSocialAcademica/RedSocialAcademica.vcxproj" Id="df819384-3e4d-4b21-bc1b-11e91cf2f6cc" />
+  <Project Path="RedSocialAcademica/RedSocialAcademica.vcxproj" />
 </Solution>

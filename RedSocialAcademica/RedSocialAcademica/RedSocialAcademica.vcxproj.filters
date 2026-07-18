@@ -18,45 +18,45 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="rojonegro.cpp">
-      <Filter>Resource Files</Filter>
-    </ClCompile>
-    <ClCompile Include="notificationqueue.cpp">
-      <Filter>Resource Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mongoapi.cpp">
+    <ClCompile Include="bplustree.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
     <ClCompile Include="dynamichash.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
+    <ClCompile Include="notificationqueue.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
     <ClCompile Include="grafo.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
-    <ClCompile Include="bplustree.cpp">
+    <ClCompile Include="rojonegro.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mongoapi.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="modelos.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="bplustree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dynamichash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="grafo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="modelos.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mongoapi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="notificationqueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="grafo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="rojonegro.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mongoapi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
