@@ -12,6 +12,7 @@ struct Usuario {
     string carrera;       // vacio si es profesor/admin
     string institucion;
     TipoUsuario tipo;
+    string contrasena;
 };
 struct Comentario {
     int id;

@@ -3,6 +3,10 @@
 #include "bplustree.h"
 #include "dynamichash.h"
 #include "notificationqueue.h"
+#include "grafo.h"
+#include "gestorusuarios.h"
+#include "gestorsolicitudes.h"
+#include "gestorcomentarios.h"
 using namespace std;
 
 int main() {
@@ -68,6 +72,58 @@ int main() {
         Notificacion n = colaNotif.desencolar();
         cout << "  " << n.mensaje << endl;
     }
+
+    cout << endl << "=== Prueba de Grafo de Amistades + Usuarios + Solicitudes + Comentarios ===" << endl;
+    Grafo grafo;
+    GestorUsuarios gestorUsuarios(grafo);
+    GestorSolicitudes gestorSolicitudes(grafo);
+    GestorComentarios gestorComentarios;
+
+    int idTrayce = gestorUsuarios.registrar("Trayce", "trayce@cenfotec.cr", "clave123",
+        "Ing. Software", "CENFOTEC", TipoUsuario::ESTUDIANTE);
+    int idMatias = gestorUsuarios.registrar("Matias", "matias@cenfotec.cr", "clave456",
+        "Ing. Software", "CENFOTEC", TipoUsuario::ESTUDIANTE);
+    int idMario = gestorUsuarios.registrar("Mario", "mario@cenfotec.cr", "clave789",
+        "Ing. Software", "CENFOTEC", TipoUsuario::PROFESOR);
+
+    cout << "Usuarios registrados con ids: " << idTrayce << ", " << idMatias << ", " << idMario << endl;
+
+    // Probar login
+    Usuario logueado;
+    if (gestorUsuarios.iniciarSesion("matias@cenfotec.cr", "clave456", logueado)) {
+        cout << "Login OK para: " << logueado.nombre << endl;
+    }
+    if (!gestorUsuarios.iniciarSesion("matias@cenfotec.cr", "claveIncorrecta", logueado)) {
+        cout << "Login con clave incorrecta fue rechazado correctamente" << endl;
+    }
+
+    // Editar perfil
+    gestorUsuarios.editarPerfil(idMatias, "Matias Lutz", "Ing. Software", "CENFOTEC");
+    cout << "Perfil de Matias actualizado: " << grafo.obtenerUsuario(idMatias).nombre << endl;
+
+    // Flujo de solicitud de amistad: enviar -> aceptar
+    cout << endl << "Enviando solicitud de amistad Trayce -> Matias..." << endl;
+    gestorSolicitudes.enviarSolicitud(idTrayce, idMatias);
+    cout << "Son amigos antes de aceptar? " << (grafo.sonAmigos(idTrayce, idMatias) ? "si" : "no") << endl;
+
+    gestorSolicitudes.aceptarSolicitud(idTrayce, idMatias);
+    cout << "Son amigos despues de aceptar? " << (grafo.sonAmigos(idTrayce, idMatias) ? "si" : "no") << endl;
+
+    // Una solicitud que se rechaza
+    gestorSolicitudes.enviarSolicitud(idMario, idMatias);
+    gestorSolicitudes.rechazarSolicitud(idMario, idMatias);
+    cout << "Son amigos Mario y Matias tras rechazo? " << (grafo.sonAmigos(idMario, idMatias) ? "si" : "no") << endl;
+
+    // Comentarios sobre una publicacion (usando el id 1 del arbol de Trayce)
+    gestorComentarios.agregarComentario(idMatias, 1, "Buen punto, coincido", 20260610);
+    gestorComentarios.agregarComentario(idTrayce, 1, "Gracias!", 20260611);
+
+    cout << endl << "Comentarios de la publicacion #1:" << endl;
+    for (const Comentario& c : gestorComentarios.obtenerPorPublicacion(1)) {
+        cout << "  [" << formatearFecha(c.fecha) << "] usuario " << c.idUsuario << ": " << c.contenido << endl;
+    }
+
+    grafo.imprimir();
 
     return 0;
 }
