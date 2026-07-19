@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{53A729B7-3471-7CE2-A1BF-FA078F07EF28}</ProjectGuid>
+    <ProjectGuid>{DF819384-3E4D-4B21-BC1B-11E91CF2F6CC}</ProjectGuid>
     <RootNamespace>RedSocialAcademica</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
