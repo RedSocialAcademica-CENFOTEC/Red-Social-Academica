@@ -35,6 +35,13 @@ int main() {
     arbol.eliminar(3);
     arbol.imprimirHojas();
 
+    cout << endl << "=== Prueba de persistencia: Arbol B+ ===" << endl;
+    arbol.guardarEnArchivo("publicaciones.dat");
+    BPlusTree arbolCargado(2);
+    arbolCargado.cargarDesdeArchivo("publicaciones.dat");
+    cout << "Arbol cargado desde publicaciones.dat:" << endl;
+    arbolCargado.imprimirHojas();
+
     cout << endl << "=== Prueba de Hashing Dinamico ===" << endl;
     DynamicHash hash;
 
@@ -59,6 +66,15 @@ int main() {
         cout << "  " << u.nombre << endl;
     }
 
+    cout << endl << "=== Prueba de persistencia: Hashing Dinamico ===" << endl;
+    hash.guardarEnArchivo("usuarios.dat");
+    DynamicHash hashCargado;
+    hashCargado.cargarDesdeArchivo("usuarios.dat");
+    cout << "Usuarios cargados desde usuarios.dat:" << endl;
+    for (const Usuario& u : hashCargado.obtenerTodos()) {
+        cout << "  " << u.nombre << " - " << u.correo << endl;
+    }
+
     cout << endl << "=== Prueba de Cola de Notificaciones ===" << endl;
     NotificationQueue colaNotif;
 
@@ -67,7 +83,17 @@ int main() {
     colaNotif.encolar({ 3, 1, "A alguien le gusto tu publicacion", 20260612 });      // prioridad normal
     colaNotif.encolar({ 4, 1, "Alerta de seguridad", 20260613 }, 10);                 // prioridad muy alta
 
-    cout << "Orden de salida (FIFO con prioridad):" << endl;
+    cout << endl << "=== Prueba de persistencia: Cola de Notificaciones ===" << endl;
+    colaNotif.guardarEnArchivo("notificaciones.dat");
+    NotificationQueue colaCargada;
+    colaCargada.cargarDesdeArchivo("notificaciones.dat");
+    cout << "Orden cargado desde notificaciones.dat (debe respetar FIFO con prioridad):" << endl;
+    while (!colaCargada.estaVacia()) {
+        Notificacion n = colaCargada.desencolar();
+        cout << "  " << n.mensaje << endl;
+    }
+
+    cout << "Orden de salida original (FIFO con prioridad):" << endl;
     while (!colaNotif.estaVacia()) {
         Notificacion n = colaNotif.desencolar();
         cout << "  " << n.mensaje << endl;
@@ -88,7 +114,6 @@ int main() {
 
     cout << "Usuarios registrados con ids: " << idTrayce << ", " << idMatias << ", " << idMario << endl;
 
-    // Probar login
     Usuario logueado;
     if (gestorUsuarios.iniciarSesion("matias@cenfotec.cr", "clave456", logueado)) {
         cout << "Login OK para: " << logueado.nombre << endl;
@@ -97,11 +122,9 @@ int main() {
         cout << "Login con clave incorrecta fue rechazado correctamente" << endl;
     }
 
-    // Editar perfil
     gestorUsuarios.editarPerfil(idMatias, "Matias Lutz", "Ing. Software", "CENFOTEC");
     cout << "Perfil de Matias actualizado: " << grafo.obtenerUsuario(idMatias).nombre << endl;
 
-    // Flujo de solicitud de amistad: enviar -> aceptar
     cout << endl << "Enviando solicitud de amistad Trayce -> Matias..." << endl;
     gestorSolicitudes.enviarSolicitud(idTrayce, idMatias);
     cout << "Son amigos antes de aceptar? " << (grafo.sonAmigos(idTrayce, idMatias) ? "si" : "no") << endl;
@@ -109,12 +132,10 @@ int main() {
     gestorSolicitudes.aceptarSolicitud(idTrayce, idMatias);
     cout << "Son amigos despues de aceptar? " << (grafo.sonAmigos(idTrayce, idMatias) ? "si" : "no") << endl;
 
-    // Una solicitud que se rechaza
     gestorSolicitudes.enviarSolicitud(idMario, idMatias);
     gestorSolicitudes.rechazarSolicitud(idMario, idMatias);
     cout << "Son amigos Mario y Matias tras rechazo? " << (grafo.sonAmigos(idMario, idMatias) ? "si" : "no") << endl;
 
-    // Comentarios sobre una publicacion (usando el id 1 del arbol de Trayce)
     gestorComentarios.agregarComentario(idMatias, 1, "Buen punto, coincido", 20260610);
     gestorComentarios.agregarComentario(idTrayce, 1, "Gracias!", 20260611);
 
