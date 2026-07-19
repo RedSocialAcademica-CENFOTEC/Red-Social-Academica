@@ -36,6 +36,24 @@
     <ClCompile Include="mongoapi.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
+    <ClCompile Include="Gestorcomentarios.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Gestorsolicitudes.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Gestorusuarios.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Gestorcomentarios.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Gestorsolicitudes.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Gestorusuarios.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="modelos.h">

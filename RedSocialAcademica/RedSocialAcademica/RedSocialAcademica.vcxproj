@@ -141,8 +141,14 @@
   <ItemGroup>
     <ClCompile Include="bplustree.cpp" />
     <ClCompile Include="dynamichash.cpp" />
+    <ClCompile Include="Gestorcomentarios.cpp" />
+    <ClCompile Include="Gestorcomentarios.h" />
+    <ClCompile Include="Gestorsolicitudes.cpp" />
+    <ClCompile Include="Gestorsolicitudes.h" />
+    <ClCompile Include="Gestorusuarios.cpp" />
+    <ClCompile Include="Gestorusuarios.h" />
     <ClCompile Include="grafo.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mongoapi.cpp">

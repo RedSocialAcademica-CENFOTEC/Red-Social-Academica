@@ -9,11 +9,11 @@ Grafo::~Grafo() {}
 void Grafo::agregarUsuario(const Usuario& usuario) {
     if (!existeUsuario(usuario.id)) {
         usuarios[usuario.id] = usuario;
-        adyacencia[usuario.id] = unordered_set<string>();
+        adyacencia[usuario.id] = unordered_set<int>();
     }
 }
 
-void Grafo::eliminarUsuario(const string& id) {
+void Grafo::eliminarUsuario(int id) {
     if (!existeUsuario(id)) return;
 
     // Eliminar todas las aristas que conectan con este usuario
@@ -25,19 +25,38 @@ void Grafo::eliminarUsuario(const string& id) {
     usuarios.erase(id);
 }
 
-bool Grafo::existeUsuario(const string& id) const {
+bool Grafo::existeUsuario(int id) const {
     return usuarios.find(id) != usuarios.end();
 }
 
-Usuario Grafo::obtenerUsuario(const string& id) const {
+Usuario Grafo::obtenerUsuario(int id) const {
     auto it = usuarios.find(id);
     if (it != usuarios.end()) {
         return it->second;
     }
-    throw runtime_error("Usuario no encontrado: " + id);
+    throw runtime_error("Usuario no encontrado: " + to_string(id));
 }
 
-bool Grafo::agregarAmistad(const string& id1, const string& id2) {
+bool Grafo::actualizarUsuario(int id, const Usuario& datosActualizados) {
+    if (!existeUsuario(id)) return false;
+
+    // El id no se toca (es la clave del mapa y de las amistades), el resto se reemplaza
+    Usuario actualizado = datosActualizados;
+    actualizado.id = id;
+    usuarios[id] = actualizado;
+    return true;
+}
+
+vector<Usuario> Grafo::obtenerTodosUsuarios() const {
+    vector<Usuario> resultado;
+    resultado.reserve(usuarios.size());
+    for (const auto& par : usuarios) {
+        resultado.push_back(par.second);
+    }
+    return resultado;
+}
+
+bool Grafo::agregarAmistad(int id1, int id2) {
     if (!existeUsuario(id1) || !existeUsuario(id2)) return false;
     if (id1 == id2) return false;
     if (sonAmigos(id1, id2)) return false;
@@ -47,7 +66,7 @@ bool Grafo::agregarAmistad(const string& id1, const string& id2) {
     return true;
 }
 
-bool Grafo::eliminarAmistad(const string& id1, const string& id2) {
+bool Grafo::eliminarAmistad(int id1, int id2) {
     if (!sonAmigos(id1, id2)) return false;
 
     adyacencia[id1].erase(id2);
@@ -55,14 +74,14 @@ bool Grafo::eliminarAmistad(const string& id1, const string& id2) {
     return true;
 }
 
-bool Grafo::sonAmigos(const string& id1, const string& id2) const {
+bool Grafo::sonAmigos(int id1, int id2) const {
     auto it = adyacencia.find(id1);
     if (it == adyacencia.end()) return false;
     return it->second.find(id2) != it->second.end();
 }
 
-vector<string> Grafo::obtenerAmigos(const string& id) const {
-    vector<string> resultado;
+vector<int> Grafo::obtenerAmigos(int id) const {
+    vector<int> resultado;
     auto it = adyacencia.find(id);
     if (it != adyacencia.end()) {
         for (const auto& amigo : it->second) {
@@ -72,14 +91,14 @@ vector<string> Grafo::obtenerAmigos(const string& id) const {
     return resultado;
 }
 
-vector<string> Grafo::sugerirAmigos(const string& id, int maxSugerencias) const {
-    vector<string> sugerencias;
+vector<int> Grafo::sugerirAmigos(int id, int maxSugerencias) const {
+    vector<int> sugerencias;
     if (!existeUsuario(id)) return sugerencias;
 
     // Usar BFS para encontrar amigos de amigos
-    unordered_set<string> visitados;
-    queue<string> cola;
-    unordered_map<string, int> distancia;
+    unordered_set<int> visitados;
+    queue<int> cola;
+    unordered_map<int, int> distancia;
 
     // Inicializar con los amigos directos
     for (const auto& amigo : adyacencia.at(id)) {
@@ -89,8 +108,8 @@ vector<string> Grafo::sugerirAmigos(const string& id, int maxSugerencias) const 
     }
     visitados.insert(id);
 
-    while (!cola.empty() && sugerencias.size() < maxSugerencias) {
-        string actual = cola.front();
+    while (!cola.empty() && (int)sugerencias.size() < maxSugerencias) {
+        int actual = cola.front();
         cola.pop();
 
         for (const auto& vecino : adyacencia.at(actual)) {
@@ -101,7 +120,7 @@ vector<string> Grafo::sugerirAmigos(const string& id, int maxSugerencias) const 
                 // Sugerir amigos a distancia 2 (amigos de amigos)
                 if (distancia[vecino] == 2) {
                     sugerencias.push_back(vecino);
-                    if (sugerencias.size() >= maxSugerencias) break;
+                    if ((int)sugerencias.size() >= maxSugerencias) break;
                 }
 
                 cola.push(vecino);
@@ -112,8 +131,8 @@ vector<string> Grafo::sugerirAmigos(const string& id, int maxSugerencias) const 
     return sugerencias;
 }
 
-vector<string> Grafo::amigosEnComun(const string& id1, const string& id2) const {
-    vector<string> comunes;
+vector<int> Grafo::amigosEnComun(int id1, int id2) const {
+    vector<int> comunes;
     if (!existeUsuario(id1) || !existeUsuario(id2)) return comunes;
 
     const auto& amigos1 = adyacencia.at(id1);
@@ -128,25 +147,25 @@ vector<string> Grafo::amigosEnComun(const string& id1, const string& id2) const 
     return comunes;
 }
 
-int Grafo::gradoDelNodo(const string& id) const {
+int Grafo::gradoDelNodo(int id) const {
     auto it = adyacencia.find(id);
     if (it == adyacencia.end()) return 0;
     return it->second.size();
 }
 
-vector<string> Grafo::caminoMasCorto(const string& inicio, const string& destino) const {
+vector<int> Grafo::caminoMasCorto(int inicio, int destino) const {
     if (inicio == destino) return { inicio };
     if (!existeUsuario(inicio) || !existeUsuario(destino)) return {};
 
-    unordered_map<string, string> padre;
-    unordered_set<string> visitados;
-    queue<string> cola;
+    unordered_map<int, int> padre;
+    unordered_set<int> visitados;
+    queue<int> cola;
 
     cola.push(inicio);
     visitados.insert(inicio);
 
     while (!cola.empty()) {
-        string actual = cola.front();
+        int actual = cola.front();
         cola.pop();
 
         if (actual == destino) break;
@@ -164,8 +183,8 @@ vector<string> Grafo::caminoMasCorto(const string& inicio, const string& destino
         return {}; // No hay camino
     }
 
-    vector<string> camino;
-    string actual = destino;
+    vector<int> camino;
+    int actual = destino;
     while (actual != inicio) {
         camino.push_back(actual);
         actual = padre[actual];
@@ -176,27 +195,27 @@ vector<string> Grafo::caminoMasCorto(const string& inicio, const string& destino
     return camino;
 }
 
-int Grafo::distanciaEntre(const string& id1, const string& id2) const {
+int Grafo::distanciaEntre(int id1, int id2) const {
     auto camino = caminoMasCorto(id1, id2);
     if (camino.empty()) return -1;
     return camino.size() - 1;
 }
 
-vector<vector<string>> Grafo::componentesConexas() const {
-    vector<vector<string>> componentes;
-    unordered_set<string> visitados;
+vector<vector<int>> Grafo::componentesConexas() const {
+    vector<vector<int>> componentes;
+    unordered_set<int> visitados;
 
     for (const auto& par : adyacencia) {
-        const string& id = par.first;
+        int id = par.first;
         if (visitados.find(id) != visitados.end()) continue;
 
-        vector<string> componente;
-        queue<string> cola;
+        vector<int> componente;
+        queue<int> cola;
         cola.push(id);
         visitados.insert(id);
 
         while (!cola.empty()) {
-            string actual = cola.front();
+            int actual = cola.front();
             cola.pop();
             componente.push_back(actual);
 
@@ -240,8 +259,8 @@ bool Grafo::guardar(const string& nombreArchivo) const {
     archivo << "USUARIOS\n";
     for (const auto& par : usuarios) {
         const Usuario& u = par.second;
-        archivo << u.id << "|" << u.nombre << "|" << u.email << "|"
-            << u.carrera << "|" << u.institucion << "|" << u.tipo << "\n";
+        archivo << u.id << "|" << u.nombre << "|" << u.correo << "|"
+            << u.carrera << "|" << u.institucion << "|" << (int)u.tipo << "|" << u.contrasena << "\n";
     }
 
     // Guardar amistades
@@ -286,23 +305,31 @@ bool Grafo::cargar(const string& nombreArchivo) {
 
         if (leyendoUsuarios) {
             stringstream ss(linea);
-            string id, nombre, email, carrera, institucion, tipo;
-            getline(ss, id, '|');
+            string idStr, nombre, correo, carrera, institucion, tipoStr, contrasena;
+            getline(ss, idStr, '|');
             getline(ss, nombre, '|');
-            getline(ss, email, '|');
+            getline(ss, correo, '|');
             getline(ss, carrera, '|');
             getline(ss, institucion, '|');
-            getline(ss, tipo, '|');
+            getline(ss, tipoStr, '|');
+            getline(ss, contrasena, '|');
 
-            Usuario usuario(id, nombre, email, "", carrera, institucion, tipo);
+            Usuario usuario;
+            usuario.id = stoi(idStr);
+            usuario.nombre = nombre;
+            usuario.correo = correo;
+            usuario.carrera = carrera;
+            usuario.institucion = institucion;
+            usuario.tipo = (TipoUsuario)stoi(tipoStr);
+            usuario.contrasena = contrasena;
             agregarUsuario(usuario);
         }
         else if (leyendoAmistades) {
             stringstream ss(linea);
-            string id1, id2;
-            getline(ss, id1, '|');
-            getline(ss, id2, '|');
-            agregarAmistad(id1, id2);
+            string id1Str, id2Str;
+            getline(ss, id1Str, '|');
+            getline(ss, id2Str, '|');
+            agregarAmistad(stoi(id1Str), stoi(id2Str));
         }
     }
 
@@ -318,16 +345,16 @@ void Grafo::imprimir() const {
     cout << "Componentes conexas: " << componentesConexas().size() << endl;
 
     for (const auto& par : adyacencia) {
-        const string& id = par.first;
+        int id = par.first;
         const auto& amigos = par.second;
 
         auto it = usuarios.find(id);
-        string nombre = (it != usuarios.end()) ? it->second.nombre : id;
+        string nombre = (it != usuarios.end()) ? it->second.nombre : to_string(id);
 
         cout << nombre << " -> ";
         for (const auto& amigoId : amigos) {
             auto itAmigo = usuarios.find(amigoId);
-            string nombreAmigo = (itAmigo != usuarios.end()) ? itAmigo->second.nombre : amigoId;
+            string nombreAmigo = (itAmigo != usuarios.end()) ? itAmigo->second.nombre : to_string(amigoId);
             cout << nombreAmigo << " ";
         }
         cout << endl;
