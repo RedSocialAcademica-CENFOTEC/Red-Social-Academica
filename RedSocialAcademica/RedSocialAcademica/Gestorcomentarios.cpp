@@ -78,6 +78,7 @@ void GestorComentarios::cargarDesdeArchivo(const string& nombreArchivo) {
         getline(ss, campo, '|'); c.contenido = campo;
         getline(ss, campo, '|'); c.fecha = stoi(campo);
 
+
         comentarios.push_back(c);
         if (c.id > maxId) maxId = c.id;
     }
