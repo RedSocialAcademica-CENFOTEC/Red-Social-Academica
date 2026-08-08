@@ -14,6 +14,10 @@ public:
 
     // Devuelve el id asignado al comentario
     int agregarComentario(int idUsuario, int idPublicacion, const string& contenido, int fecha);
+
+    // Inserta un comentario que ya trae su propio id (ej. cargado desde la
+    // nube) sin reasignarlo, y ajusta el contador si hace falta.
+    void cargarComentario(const Comentario& c);
     bool eliminarComentario(int id);
 
     vector<Comentario> obtenerPorPublicacion(int idPublicacion) const;

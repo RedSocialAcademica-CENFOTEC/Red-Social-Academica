@@ -9,6 +9,13 @@ GestorUsuarios::GestorUsuarios(Grafo& _grafo) : grafo(_grafo) {
     }
 }
 
+void GestorUsuarios::sincronizarSiguienteId() {
+    siguienteId = 1;
+    for (const Usuario& u : grafo.obtenerTodosUsuarios()) {
+        if (u.id >= siguienteId) siguienteId = u.id + 1;
+    }
+}
+
 bool GestorUsuarios::correoEnUso(const string& correo) const {
     for (const Usuario& u : grafo.obtenerTodosUsuarios()) {
         if (u.correo == correo) return true;

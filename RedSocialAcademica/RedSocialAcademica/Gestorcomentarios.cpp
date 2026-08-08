@@ -17,6 +17,11 @@ int GestorComentarios::agregarComentario(int idUsuario, int idPublicacion, const
     return nuevo.id;
 }
 
+void GestorComentarios::cargarComentario(const Comentario& c) {
+    comentarios.push_back(c);
+    if (c.id >= siguienteId) siguienteId = c.id + 1;
+}
+
 bool GestorComentarios::eliminarComentario(int id) {
     for (size_t i = 0; i < comentarios.size(); i++) {
         if (comentarios[i].id == id) {

@@ -14,6 +14,11 @@ private:
 public:
     explicit GestorUsuarios(Grafo& _grafo);
 
+    // Recalcula el siguiente id disponible en base a lo que haya en el grafo.
+    // Llamar despues de insertar usuarios directamente en el grafo (ej. al
+    // cargar desde la nube) para que los proximos registros no choquen ids.
+    void sincronizarSiguienteId();
+
     // Devuelve el id asignado, o -1 si el correo ya estaba en uso
     int registrar(const string& nombre, const string& correo, const string& contrasena,
         const string& carrera, const string& institucion, TipoUsuario tipo);
