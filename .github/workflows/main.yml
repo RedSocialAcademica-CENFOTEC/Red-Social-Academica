@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: RedSocialAcademica
+        working-directory: RedSocialAcademica/RedSocialAcademica
 
     steps:
       - name: Descargar codigo
