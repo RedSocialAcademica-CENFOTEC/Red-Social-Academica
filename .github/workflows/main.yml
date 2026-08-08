@@ -1,4 +1,4 @@
-name: Compilar Red Social Academica
+name: Compilar Red Social Academica.
 
 on:
   push:
