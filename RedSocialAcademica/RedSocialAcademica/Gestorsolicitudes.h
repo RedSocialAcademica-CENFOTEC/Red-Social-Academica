@@ -17,6 +17,10 @@ private:
 public:
     explicit GestorSolicitudes(Grafo& _grafo);
 
+    // Inserta una solicitud tal cual viene (ej. cargada desde la nube). Si
+    // ya esta "aceptada", tambien reconstruye la amistad en el grafo.
+    void cargarSolicitud(const SolicitudAmistad& s);
+
     bool enviarSolicitud(int idEmisor, int idReceptor);
     bool aceptarSolicitud(int idEmisor, int idReceptor);
     bool rechazarSolicitud(int idEmisor, int idReceptor);

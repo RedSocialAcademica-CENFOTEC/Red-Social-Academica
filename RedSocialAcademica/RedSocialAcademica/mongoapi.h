@@ -4,71 +4,61 @@
 #include "modelos.h"
 #include <string>
 #include <vector>
-#include <mongocxx/client.hpp>
-#include <mongocxx/instance.hpp>
-#include <mongocxx/uri.hpp>
-#include <bsoncxx/json.hpp>
-#include <bsoncxx/builder/stream/document.hpp>
 
 using namespace std;
 
+// Cliente REST contra la API PHP/MongoDB del profesor:
+//   https://paginas-web-cr.com/Api/apis/mongodb.php
+// POST   -> insertar   {"coleccion":"...", "datos": {...}}
+// GET    -> consultar  ?coleccion=...&campo=valor
+// PUT    -> actualizar {"coleccion":"...", "filtro": {...}, "datos": {...}}
+// DELETE -> eliminar   {"coleccion":"...", "filtro": {...}}
+//
+// Importante: usamos SIEMPRE nuestro propio campo "id" (entero, asignado
+// localmente por los Gestores) como clave de negocio dentro del documento,
+// nunca el _id que genera Mongo. Asi el resto del proyecto (Grafo,
+// GestorUsuarios, etc.) no cambia su forma de identificar entidades.
 class MongoAPI {
 private:
-    mongocxx::instance instance;
-    mongocxx::client cliente;
-    mongocxx::database db;
-    string conexionString;
+    string baseUrl;
+    bool conectada = false;
 
-    // Colecciones
-    static constexpr const char* COL_USUARIOS = "usuarios";
-    static constexpr const char* COL_PUBLICACIONES = "publicaciones";
-    static constexpr const char* COL_COMENTARIOS = "comentarios";
-    static constexpr const char* COL_SOLICITUDES = "solicitudes";
+    // Nombres reales de coleccion en Mongo, con el prefijo asignado
+    static constexpr const char* PREFIJO = "RS_TGONZALEZ_MLUTZ_";
+    string colUsuarios() const;
+    string colPublicaciones() const;
+    string colComentarios() const;
+    string colSolicitudes() const;
 
-    // Conversiones
-    bsoncxx::document::value usuarioToBson(const Usuario& usuario);
-    Usuario bsonToUsuario(const bsoncxx::document::view& doc);
-
-    bsoncxx::document::value publicacionToBson(const Publicacion& pub);
-    Publicacion bsonToPublicacion(const bsoncxx::document::view& doc);
-
-    bsoncxx::document::value comentarioToBson(const Comentario& comentario);
-    Comentario bsonToComentario(const bsoncxx::document::view& doc);
+    // HTTP de bajo nivel (libcurl)
+    string httpGet(const string& queryString) const;
+    string httpEnviar(const string& metodo, const string& jsonBody) const;
 
 public:
-    MongoAPI(const string& _conexionString = "mongodb://localhost:27017");
-    ~MongoAPI();
+    explicit MongoAPI(const string& _baseUrl = "https://paginas-web-cr.com/Api/apis/mongodb.php");
 
-    bool conectar();
-    void desconectar();
+    bool conectar();     // hace una consulta de prueba; true si la API responde
     bool estaConectado() const;
 
     // CRUD Usuarios
     bool insertarUsuario(const Usuario& usuario);
-    bool actualizarUsuario(const string& id, const Usuario& usuario);
-    bool eliminarUsuario(const string& id);
+    bool actualizarUsuario(int id, const Usuario& usuario);
+    bool eliminarUsuario(int id);
     vector<Usuario> obtenerTodosUsuarios();
-    Usuario obtenerUsuarioPorId(const string& id);
-    vector<Usuario> buscarUsuarios(const string& campo, const string& valor);
 
     // CRUD Publicaciones
     bool insertarPublicacion(const Publicacion& pub);
+    bool eliminarPublicacion(int id);
     vector<Publicacion> obtenerTodasPublicaciones();
-    vector<Publicacion> obtenerPublicacionesPorUsuario(const string& idUsuario);
 
     // CRUD Comentarios
     bool insertarComentario(const Comentario& comentario);
-    vector<Comentario> obtenerComentariosPorPublicacion(const string& idPublicacion);
+    vector<Comentario> obtenerTodosComentarios();
 
     // CRUD Solicitudes
     bool insertarSolicitud(const SolicitudAmistad& solicitud);
-    vector<SolicitudAmistad> obtenerSolicitudesPendientes(const string& idUsuario);
-    bool actualizarSolicitud(const string& id, const string& estado);
-
-    // Estadísticas
-    int contarUsuarios();
-    int contarPublicaciones();
-    int contarComentarios();
+    bool actualizarSolicitud(int idEmisor, int idReceptor, const string& estado);
+    vector<SolicitudAmistad> obtenerTodasSolicitudes();
 };
 
 #endif

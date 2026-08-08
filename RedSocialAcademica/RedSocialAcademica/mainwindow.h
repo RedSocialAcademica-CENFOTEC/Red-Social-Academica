@@ -16,6 +16,7 @@
 #include "bplustree.h"
 #include "dynamichash.h"
 #include "notificationqueue.h"
+#include "mongoapi.h"
 
 // Ventana principal: agrupa todas las estructuras del backend y una pestana
 // por cada modulo del sistema. Nada de logica de negocio nueva vive aca -
@@ -37,10 +38,15 @@ private:
     BPlusTree arbol;
     DynamicHash hash;
     NotificationQueue colaNotif;
+    MongoAPI nube; // persistencia en la nube (API PHP/MongoDB del profesor)
 
     int usuarioActualId = -1; // -1 = nadie logueado
     int siguientePublicacionId = 1;
     int siguienteNotifId = 1;
+
+    // Trae usuarios/publicaciones/comentarios/solicitudes de la nube y
+    // reconstruye las estructuras locales. Se llama una vez al arrancar.
+    void cargarDesdeNube();
 
     QTabWidget* tabs;
 

@@ -16,6 +16,13 @@ int GestorSolicitudes::buscarPendiente(int idA, int idB) const {
     return -1;
 }
 
+void GestorSolicitudes::cargarSolicitud(const SolicitudAmistad& s) {
+    solicitudes.push_back(s);
+    if (s.estado == "aceptada") {
+        grafo.agregarAmistad(s.idEmisor, s.idReceptor);
+    }
+}
+
 bool GestorSolicitudes::enviarSolicitud(int idEmisor, int idReceptor) {
     if (idEmisor == idReceptor) return false;
     if (!grafo.existeUsuario(idEmisor) || !grafo.existeUsuario(idReceptor)) return false;

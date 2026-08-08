@@ -23,21 +23,32 @@ MainWindow::MainWindow(QWidget* parent)
     tabs->addTab(crearTabNotificaciones(), "Notificaciones");
     tabs->addTab(crearTabComentarios(), "Comentarios");
 
-    // Datos de demo, iguales a los que ya probamos en consola, para que la
-    // ventana no arranque vacia. Se registran via GestorUsuarios (que ya
-    // valida correo unico) y ademas se indexan en el hash para que la
-    // pestana de Busqueda tenga algo para encontrar desde el arranque.
-    struct DemoUsuario { string nombre, correo, clave, carrera, institucion; TipoUsuario tipo; };
-    vector<DemoUsuario> demo = {
-        {"Trayce", "trayce@cenfotec.cr", "clave123", "Ing. Software", "CENFOTEC", TipoUsuario::ESTUDIANTE},
-        {"Matias", "matias@cenfotec.cr", "clave456", "Ing. Software", "CENFOTEC", TipoUsuario::ESTUDIANTE},
-        {"Mario",  "mario@cenfotec.cr",  "clave789", "Ing. Software", "CENFOTEC", TipoUsuario::PROFESOR},
-        {"Ana",    "ana@cenfotec.cr",    "clave000", "Administracion", "CENFOTEC", TipoUsuario::ESTUDIANTE},
-        {"Luis",   "luis@ucr.ac.cr",     "clave111", "Ing. Software", "UCR", TipoUsuario::ESTUDIANTE},
-    };
-    for (const auto& d : demo) {
-        int id = gestorUsuarios.registrar(d.nombre, d.correo, d.clave, d.carrera, d.institucion, d.tipo);
-        if (id != -1) hash.insertar(grafo.obtenerUsuario(id));
+    // Intentamos conectar contra la API en la nube. Si trae datos, se usan
+    // esos (persistencia real entre corridas). Si la nube esta vacia o no
+    // responde, arrancamos igual con datos de demo para que la ventana no
+    // quede vacia, y esos datos de demo tambien se empujan a la nube.
+    bool huboDatosEnNube = false;
+    if (nube.conectar()) {
+        cargarDesdeNube();
+        huboDatosEnNube = !grafo.obtenerTodosUsuarios().empty();
+    }
+
+    if (!huboDatosEnNube) {
+        struct DemoUsuario { string nombre, correo, clave, carrera, institucion; TipoUsuario tipo; };
+        vector<DemoUsuario> demo = {
+            {"Trayce", "trayce@cenfotec.cr", "clave123", "Ing. Software", "CENFOTEC", TipoUsuario::ESTUDIANTE},
+            {"Matias", "matias@cenfotec.cr", "clave456", "Ing. Software", "CENFOTEC", TipoUsuario::ESTUDIANTE},
+            {"Mario",  "mario@cenfotec.cr",  "clave789", "Ing. Software", "CENFOTEC", TipoUsuario::PROFESOR},
+            {"Ana",    "ana@cenfotec.cr",    "clave000", "Administracion", "CENFOTEC", TipoUsuario::ESTUDIANTE},
+            {"Luis",   "luis@ucr.ac.cr",     "clave111", "Ing. Software", "UCR", TipoUsuario::ESTUDIANTE},
+        };
+        for (const auto& d : demo) {
+            int id = gestorUsuarios.registrar(d.nombre, d.correo, d.clave, d.carrera, d.institucion, d.tipo);
+            if (id != -1) {
+                hash.insertar(grafo.obtenerUsuario(id));
+                nube.insertarUsuario(grafo.obtenerUsuario(id));
+            }
+        }
     }
 
     connect(tabs, &QTabWidget::currentChanged, this, [this](int) {
@@ -50,6 +61,33 @@ MainWindow::MainWindow(QWidget* parent)
         });
 
     actualizarEstadoSesion();
+}
+
+void MainWindow::cargarDesdeNube() {
+    // Usuarios: van al grafo directo (preservando su id) y al hash de busqueda
+    for (const Usuario& u : nube.obtenerTodosUsuarios()) {
+        grafo.agregarUsuario(u);
+        hash.insertar(u);
+    }
+    gestorUsuarios.sincronizarSiguienteId();
+
+    // Publicaciones: al arbol B+, y llevamos la cuenta del id mas alto
+    int maxIdPub = 0;
+    for (const Publicacion& p : nube.obtenerTodasPublicaciones()) {
+        arbol.insertar(p);
+        if (p.id >= maxIdPub) maxIdPub = p.id;
+    }
+    siguientePublicacionId = maxIdPub + 1;
+
+    // Comentarios
+    for (const Comentario& c : nube.obtenerTodosComentarios()) {
+        gestorComentarios.cargarComentario(c);
+    }
+
+    // Solicitudes de amistad (reconstruye tambien las ya aceptadas en el grafo)
+    for (const SolicitudAmistad& s : nube.obtenerTodasSolicitudes()) {
+        gestorSolicitudes.cargarSolicitud(s);
+    }
 }
 
 void MainWindow::notificar(int idUsuarioDestino, const std::string& mensaje, int prioridad) {
@@ -150,6 +188,7 @@ void MainWindow::hacerRegistro() {
     }
 
     hash.insertar(grafo.obtenerUsuario(id));
+    nube.insertarUsuario(grafo.obtenerUsuario(id));
     regEstado->setText("Cuenta creada con id " + QString::number(id) + ". Ya podes iniciar sesion.");
     regEstado->setStyleSheet("color: green;");
     regNombre->clear(); regCorreo->clear(); regClave->clear(); regCarrera->clear(); regInstitucion->clear();
@@ -221,6 +260,7 @@ void MainWindow::guardarPerfil() {
     if (usuarioActualId == -1) return;
     gestorUsuarios.editarPerfil(usuarioActualId, perfilNombre->text().toStdString(),
         perfilCarrera->text().toStdString(), perfilInstitucion->text().toStdString());
+    nube.actualizarUsuario(usuarioActualId, grafo.obtenerUsuario(usuarioActualId));
     perfilEstado->setText("Perfil actualizado");
     perfilEstado->setStyleSheet("color: green;");
     refrescarPerfil();
@@ -308,6 +348,7 @@ void MainWindow::enviarSolicitudSeleccionada() {
     int idDestino = item->data(Qt::UserRole).toInt();
     bool ok = gestorSolicitudes.enviarSolicitud(usuarioActualId, idDestino);
     if (ok) {
+        nube.insertarSolicitud({ usuarioActualId, idDestino, "pendiente" });
         notificar(idDestino, grafo.obtenerUsuario(usuarioActualId).nombre + " te envio una solicitud de amistad", 5);
         amigosEstado->setText("Solicitud enviada");
         amigosEstado->setStyleSheet("color: green;");
@@ -324,6 +365,7 @@ void MainWindow::aceptarSolicitudSeleccionada() {
     if (!item) return;
     int idEmisor = item->data(Qt::UserRole).toInt();
     gestorSolicitudes.aceptarSolicitud(idEmisor, usuarioActualId);
+    nube.actualizarSolicitud(idEmisor, usuarioActualId, "aceptada");
     notificar(idEmisor, grafo.obtenerUsuario(usuarioActualId).nombre + " acepto tu solicitud de amistad", 3);
     refrescarAmigos();
 }
@@ -333,6 +375,7 @@ void MainWindow::rechazarSolicitudSeleccionada() {
     if (!item) return;
     int idEmisor = item->data(Qt::UserRole).toInt();
     gestorSolicitudes.rechazarSolicitud(idEmisor, usuarioActualId);
+    nube.actualizarSolicitud(idEmisor, usuarioActualId, "rechazada");
     refrescarAmigos();
 }
 
@@ -397,6 +440,7 @@ void MainWindow::crearPublicacion() {
     p.contenido = pubContenido->text().toStdString();
     p.fecha = pubFecha->text().toInt();
     arbol.insertar(p);
+    nube.insertarPublicacion(p);
 
     pubContenido->clear();
     pubEstado->setText("Publicacion #" + QString::number(p.id) + " creada");
@@ -435,7 +479,9 @@ void MainWindow::buscarFeedPorRango() {
 void MainWindow::eliminarPublicacionSeleccionada() {
     QListWidgetItem* item = listaPublicaciones->currentItem();
     if (!item) return;
-    arbol.eliminar(item->data(Qt::UserRole).toInt());
+    int idPub = item->data(Qt::UserRole).toInt();
+    arbol.eliminar(idPub);
+    nube.eliminarPublicacion(idPub);
     refrescarFeedCompleto();
     refrescarComboPublicaciones();
 }
@@ -592,7 +638,9 @@ void MainWindow::agregarComentario() {
     int idPub = comentPublicacionId->currentData().toInt();
     QDate hoy = QDate::currentDate();
     int fecha = hoy.year() * 10000 + hoy.month() * 100 + hoy.day();
-    gestorComentarios.agregarComentario(usuarioActualId, idPub, comentTexto->text().toStdString(), fecha);
+    string texto = comentTexto->text().toStdString();
+    int idComentario = gestorComentarios.agregarComentario(usuarioActualId, idPub, texto, fecha);
+    nube.insertarComentario({ idComentario, usuarioActualId, idPub, texto, fecha });
 
     // Avisar al autor de la publicacion, si no es quien comento
     for (const Publicacion& p : arbol.obtenerTodas()) {
