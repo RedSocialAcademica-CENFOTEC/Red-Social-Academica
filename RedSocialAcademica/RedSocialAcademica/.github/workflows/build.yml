@@ -1,0 +1,23 @@
+name: Compilar Red Social Academica
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar dependencias (Qt6, CMake)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qt6-base-dev cmake build-essential
+
+      - name: Configurar CMake
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Compilar
+        run: cmake --build build --parallel

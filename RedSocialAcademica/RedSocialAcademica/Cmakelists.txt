@@ -32,6 +32,8 @@ add_executable(red_social_gui
     modelos.h
     mongoapi.h
     mongoapi.cpp
+    redblacktree.h
+    redblacktree.cpp
     json.hpp
 )
 
