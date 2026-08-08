@@ -7,6 +7,7 @@
 #include "gestorusuarios.h"
 #include "gestorsolicitudes.h"
 #include "gestorcomentarios.h"
+#include "redblacktree.h"
 using namespace std;
 
 int main() {
@@ -145,6 +146,52 @@ int main() {
     }
 
     grafo.imprimir();
+
+    // ===== Prueba: Arbol Rojo-Negro (usuarios en linea) =====
+    cout << endl << "=== Prueba: Arbol Rojo-Negro (usuarios en linea) ===" << endl;
+
+    RedBlackTree usuariosEnLinea;
+
+    Usuario u1; u1.id = 1; u1.nombre = "Trayce"; u1.correo = "trayce@cenfotec.ac.cr";
+    u1.carrera = "Ingenieria de Software"; u1.institucion = "CENFOTEC"; u1.tipo = TipoUsuario::ESTUDIANTE; u1.contrasena = "1234";
+
+    Usuario u2; u2.id = 2; u2.nombre = "Matias"; u2.correo = "matias@cenfotec.ac.cr";
+    u2.carrera = "Ingenieria de Software"; u2.institucion = "CENFOTEC"; u2.tipo = TipoUsuario::ESTUDIANTE; u2.contrasena = "1234";
+
+    Usuario u3; u3.id = 3; u3.nombre = "Mario"; u3.correo = "mario@cenfotec.ac.cr";
+    u3.carrera = ""; u3.institucion = "CENFOTEC"; u3.tipo = TipoUsuario::PROFESOR; u3.contrasena = "1234";
+
+    usuariosEnLinea.conectar(u1);
+    usuariosEnLinea.conectar(u2);
+    usuariosEnLinea.conectar(u3);
+
+    cout << "Usuarios en linea (" << usuariosEnLinea.cantidadEnLinea() << "): ";
+    for (const Usuario& u : usuariosEnLinea.listarEnLinea()) {
+        cout << u.nombre << " ";
+    }
+    cout << endl;
+
+    cout << "Esta Matias en linea? " << (usuariosEnLinea.estaEnLinea(2) ? "si" : "no") << endl;
+
+    cout << "Desconectando a Matias..." << endl;
+    usuariosEnLinea.desconectar(2);
+
+    cout << "Usuarios en linea (" << usuariosEnLinea.cantidadEnLinea() << "): ";
+    for (const Usuario& u : usuariosEnLinea.listarEnLinea()) {
+        cout << u.nombre << " ";
+    }
+    cout << endl;
+
+    cout << endl << "=== Prueba de persistencia: Arbol Rojo-Negro ===" << endl;
+    usuariosEnLinea.guardarEnArchivo("usuarios_en_linea.dat");
+
+    RedBlackTree cargado;
+    cargado.cargarDesdeArchivo("usuarios_en_linea.dat");
+    cout << "Cargado de archivo (" << cargado.cantidadEnLinea() << "): ";
+    for (const Usuario& u : cargado.listarEnLinea()) {
+        cout << u.nombre << " ";
+    }
+    cout << endl;
 
     return 0;
 }

@@ -51,6 +51,9 @@
     <ClCompile Include="Gestorusuarios.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
+    <ClCompile Include="redblacktree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="modelos.h">
@@ -69,6 +72,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mongoapi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="redblacktree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
