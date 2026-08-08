@@ -25,6 +25,7 @@ public:
     DynamicHash();
     void insertar(const Usuario& user);
     Usuario* buscarPorNombre(const string& nombre);
+    bool eliminarPorNombre(const string& nombre);
     vector<Usuario> buscarPorCarrera(const string& carrera);
     vector<Usuario> buscarPorInstitucion(const string& institucion);
     vector<Usuario> obtenerTodos();

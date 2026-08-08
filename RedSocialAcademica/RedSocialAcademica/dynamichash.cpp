@@ -85,6 +85,21 @@ Usuario* DynamicHash::buscarPorNombre(const string& nombre) {
     return nullptr; // no encontrado
 }
 
+// Igual que buscarPorNombre: el hash nos lleva directo al bucket, sin
+// recorrer el resto de la estructura.
+bool DynamicHash::eliminarPorNombre(const string& nombre) {
+    int idx = calcularHash(nombre);
+    Bucket* bucket = directorio[idx];
+
+    for (size_t i = 0; i < bucket->usuarios.size(); i++) {
+        if (bucket->usuarios[i].nombre == nombre) {
+            bucket->usuarios.erase(bucket->usuarios.begin() + i);
+            return true;
+        }
+    }
+    return false; // no encontrado
+}
+
 //buscarPorCarrera y buscarPorInstitucion son más lentas — el hash no tiene idea de carreras ni 
 // instituciones, solo de nombres. Entonces para buscar por esos campos no hay atajo: hay que recorrer todos los buckets, uno por uno, 
 // revisando usuario por usuario

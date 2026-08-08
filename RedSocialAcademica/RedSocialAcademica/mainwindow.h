@@ -17,6 +17,7 @@
 #include "dynamichash.h"
 #include "notificationqueue.h"
 #include "mongoapi.h"
+#include "redblacktree.h"
 
 // Ventana principal: agrupa todas las estructuras del backend y una pestana
 // por cada modulo del sistema. Nada de logica de negocio nueva vive aca -
@@ -39,6 +40,7 @@ private:
     DynamicHash hash;
     NotificationQueue colaNotif;
     MongoAPI nube; // persistencia en la nube (API PHP/MongoDB del profesor)
+    ArbolRojoNegro usuariosEnLinea; // quien tiene sesion iniciada ahora mismo
 
     int usuarioActualId = -1; // -1 = nadie logueado
     int siguientePublicacionId = 1;
@@ -85,6 +87,7 @@ private:
     QListWidget* listaAmigos;
     QListWidget* listaPendientesRecibidas;
     QListWidget* listaSugerencias;
+    QListWidget* listaEnLinea; // Arbol Rojo-Negro: usuarios con sesion iniciada ahora
     QLabel* amigosEstado;
     void refrescarAmigos();
     void enviarSolicitudSeleccionada();

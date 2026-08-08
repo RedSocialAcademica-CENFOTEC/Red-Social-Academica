@@ -158,6 +158,7 @@ void MainWindow::hacerLogin() {
         loginClave->text().toStdString(), u);
     if (ok) {
         usuarioActualId = u.id;
+        usuariosEnLinea.insertar(u);
         loginEstado->setText("Bienvenido, " + QString::fromStdString(u.nombre));
         loginEstado->setStyleSheet("color: green;");
         actualizarEstadoSesion();
@@ -195,6 +196,7 @@ void MainWindow::hacerRegistro() {
 }
 
 void MainWindow::hacerLogout() {
+    if (usuarioActualId != -1) usuariosEnLinea.eliminar(usuarioActualId);
     usuarioActualId = -1;
     actualizarEstadoSesion();
     tabs->setCurrentIndex(0);
@@ -261,6 +263,7 @@ void MainWindow::guardarPerfil() {
     gestorUsuarios.editarPerfil(usuarioActualId, perfilNombre->text().toStdString(),
         perfilCarrera->text().toStdString(), perfilInstitucion->text().toStdString());
     nube.actualizarUsuario(usuarioActualId, grafo.obtenerUsuario(usuarioActualId));
+    usuariosEnLinea.insertar(grafo.obtenerUsuario(usuarioActualId)); // refresca el dato cacheado
     perfilEstado->setText("Perfil actualizado");
     perfilEstado->setStyleSheet("color: green;");
     refrescarPerfil();
@@ -297,6 +300,9 @@ QWidget* MainWindow::crearTabAmigos() {
     colDer->addWidget(new QLabel("Mis amigos:"));
     listaAmigos = new QListWidget();
     colDer->addWidget(listaAmigos);
+    colDer->addWidget(new QLabel("Usuarios en linea (Arbol Rojo-Negro):"));
+    listaEnLinea = new QListWidget();
+    colDer->addWidget(listaEnLinea);
     amigosEstado = new QLabel();
     colDer->addWidget(amigosEstado);
 
@@ -338,6 +344,11 @@ void MainWindow::refrescarAmigos() {
     listaSugerencias->clear();
     for (int idSugerido : grafo.sugerirAmigos(usuarioActualId, 5)) {
         listaSugerencias->addItem(QString::fromStdString(grafo.obtenerUsuario(idSugerido).nombre) + "  (amigo de un amigo)");
+    }
+
+    listaEnLinea->clear();
+    for (const Usuario& u : usuariosEnLinea.obtenerTodosEnLinea()) {
+        listaEnLinea->addItem(QString("#%1 %2").arg(u.id).arg(QString::fromStdString(u.nombre)));
     }
 }
 
